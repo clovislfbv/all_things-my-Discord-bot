@@ -1,14 +1,12 @@
 import discord
 from discord.ext import commands, tasks
-import youtube_dl
 from youtube_dl import *
 import asyncio
-from random import *
+from random import randint, choice
 import pyautogui as o
 import urllib.parse, urllib.request, re
 from time import sleep
 import logging
-import random
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy
 import json
@@ -18,22 +16,21 @@ import BlagueApi
 from pyjokes import *
 from gtts import gTTS
 from time import sleep
-from mutagen.mp3 import MP3
 from datetime import datetime
 import pytz
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from datetime import date
-from time import sleep
 
 bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
 musics = {}
-ytdl = youtube_dl.YoutubeDL()
+ytdl = YoutubeDL()
 client = discord.Client()
 url_queue = []
 message_skip = 0
 message_channel = 0
 playing = 0
+pays = {"FR" : '37i9dQZEVXbIPWwFssbupI?si=1e836528e2384a70', "UK" : "37i9dQZEVXbLnolsZ8PSNw?si=bcc5a83311b54e67", "USA" : "37i9dQZEVXbLRQDuF5jeBp?si=0b5e105bed784940",  "WORLD" : '37i9dQZEVXbMDoHDwVN2tF?si=510c4902c6ba4d80', "ES" : "37i9dQZEVXbNFJfN1Vw8d9?si=3087bda4c2df4961", "IN" : "37i9dQZEVXbLZ52XmnySJg?si=085b180ae65b4609", "PH" : "37i9dQZEVXbNBz9cRCSFkY?si=b30c3057903f4ef5", "TU" : "37i9dQZEVXbIVYVBNw9D5K?si=3f4a25f140904d2f", "JA" : "37i9dQZEVXbKXQ4mDTEBXq?si=5971ca3ffc744d15", "PB" : "37i9dQZEVXbKCF6dqVpDkS?si=0b8e08dc941e4b47", "IT" : "37i9dQZEVXbIQnj7RRhdSX?si=3d1f7cb768e14959", "RU" : "37i9dQZEVXbL8l7ra5vVdB?si=28dc400fabb8424b"}
 current_music = ""
 dict_words = {"Das Gen(-e)" : "le gène", "Gentechnisch" : "génétique", "Gentechnikfrei, ohne gentechnik" : "sans OGM", "Das Nachrungsmittel(-), das lebensmittel(-)" : "la nourriture", "Das Genfood" : "les aliments génétiquement modifiés", "Das Produkt(-e)" : "le produit", "Die Kennzeichnung" : "l’étiquetage", "Etwas kategorisch/vehement ablehnen" : "refuser quelque chose de catégorique", "Die Ablehnung" : "le refus", "Der/die Verbraucher/in" : "le consommateur", "Vor etwas Angst haben" : "avoir peur pour quelque chose", "Falsche ausreichende informationen verbreiten" : "diffuser de fausses informations suffisantes", "Eine Gefahr für Gesundheit und Umwelt" : "Un danger pour la santé et l'environnement", "Das Risiko" : "le risque", "Etwas verteufeln" : "diaboliser quelque chose", "Panik auslösen" : "causer la panique", "Die Antibiotikaresistenz" : "résistance aux antibiotiques", "Neue Allergie auslösen" : "déclencher une nouvelle allergie", "Zum Wohl der Menscheit und Umwelt" : "pour le bien de l'humanité et de l'environnement", "Die Nature schützen" : "protéger la nature", "Die Klimawandel" : "le changement climatique", "Die Versorgung mit Narungsmitteln" : "l'approvisionnement en nourriture", "Die Skepsis" : "le sceptisme", "Offen gegenüber etwas sein" : "être ouvert à propos de quelque chose", "Über etwas diskutieren" : "discuter de quelque chose", "Der Nachweis" : "les preuves", "Wissenschaftliche Erkenntnisse" : "les résultats scientifiques", "Die Unbedenklichkeit" : "l’absence de danger", "Unbedenklich" : "inoffensif", "Kurzfristig" : "à court terme", "Vorsichtsmaßnahmen engreifen" : "prendre des précautions", "Demonstrieren" : "démontrer", "Mehr transparenz fordern" : "demander plus de transparence", "Das klonen = die künstliche Erzeugung eines Menschen" : "le clonage", "Klonen = duplizieren" : "dupliquer", "Identische Menschen herstellen" : "créer des personnes identiques", "Der Klonversuch" : "L'expérience du clonage", "Die Genforschung" : "la recherche génétique", "Die Gentechnik" : "le génie génétique", "Die Genmanipulation" : "La manipulation génétique", "die Gene untersuchen" : "Examiner les gènes", "Neue Möglichkeiten eröffnen" : "ouvrir de nouvelles perspectives", "Genetische Fehler korrigieren" : "corriger les erreurs génétiques",  "Unheilbare Krankheiten / Erbkrankheiten / Behinderungen verhindern" : "prévention des handicaps", "Gesundheitskoten einsparen" : "réduire les coûts des soins de santé", "Die Schwangerschaft(-en)" : "la grossesse", "Der Embryo" : "l'embryon", "Gesunde / perfekte Babys herstellen" : "faire des bébés en bonne santé", "Genies reproduzieren" : "reproduire des génies", "Das Leben verlängern" : "prolonger la vie", "Die Gefahr" : "le danger", "Das Risiko" : "le risque", "Embryonen herstellen" : "créer des embryons", "Embyonen zerstören" : "détruire des embryons", "Als Organlieferant dienen" : "donneur d'organes", "Die künstliche Selektion" : "la sélection artificielle", "Lebenswerte Menschen oder Eigenschaften auswählen" : "sélectionnez les personnes ou les caractéristiques pour lesquelles il vaut la peine de vivre", "Der Eingriff in die (menschliche) Nature" : "l'intervention dans la nature", "Gott spielen" : "jouer Dieu", "Skrupellos sein" : "être sans scrupules", "Skrupel haben" : "avoir des scrupules", "Durch ein Gesetz kontrollieren" : "contrôler par la loi", "regulieren" : "réglementer", "Erlauben" : "Autoriser", "verbieten" : "interdire", "Ein ethisches Problem darstellen" : "Présenter un problème éthique"}
 liste_words = []
@@ -89,6 +86,7 @@ async def get_id_channels(ctx):
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
+'''
 @bot.event
 async def on_command_error(ctx, error):
     # coding: utf-8
@@ -99,7 +97,7 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.MissingPermissions):
         await ctx.send("Dsl mec mais t'as pas les permissions d'utiliser cette commande.")
     elif isinstance(error.original, discord.Forbidden):
-        await ctx.send("Dsl mec je peux pas exécuter ta commande pcq les admins ne m'ont pas donner les permissions pour faire cela.")
+        await ctx.send("Dsl mec je peux pas exécuter ta commande pcq les admins ne m'ont pas donner les permissions pour faire cela.")'''
 
 def play_song(ctx, client, queu, song):
     source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(song.stream_url, before_options = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"))
@@ -173,15 +171,20 @@ async def start(ctx, secondes = 5):
 
 @tasks.loop(seconds = 5)
 async def changeStatus():
-	game = discord.Game(random.choice(status))
+	game = discord.Game(choice(status))
 	await bot.change_presence(activity = game)
 
 @bot.command(pass_context=True)
-async def play_music_from_top_fr(ctx, rang):
+async def play_music(ctx, code_pays, rang):
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
     if checks_in_bot_channel(channels, current_channel) == True:
-        global url_queue, ydl_opts, current_music
+        global url_queue, ydl_opts, current_music, pays
+        if code_pays not in pays:
+            await ctx.send("Dsl, mais je ne connais pas le code de ce pays. utilise la commande '$aide' pour voir tout les codes des pays disponibles et leur orthographe exacte.")
+        else:
+            link_pays = "spotify:user:spotifycharts:playlist:" + pays[code_pays]
+            print(link_pays)
         real_liste_tracks = []
         real_liste_artists = []
         liste_tracks = []
@@ -192,10 +195,11 @@ async def play_music_from_top_fr(ctx, rang):
         if channel is None:
             return await ctx.send("Not connected to voice channel")
 
-        client_credentials_manager = SpotifyClientCredentials(client_id="358a882e0433437896ed0c77a429023b",client_secret="5f2f3c1967104ccfbc450a7ea10e4115")
+        with open('token_spo.txt', 'r') as token_spo:
+            client_credentials_manager = SpotifyClientCredentials(client_id="358a882e0433437896ed0c77a429023b",client_secret=token_spo)
         sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-        playlist_id = 'spotify:user:spotifycharts:playlist:37i9dQZEVXbIPWwFssbupI?si=1e836528e2384a70'
+        playlist_id = link_pays
         results = sp.playlist(playlist_id)
         tracks = results['tracks']
         for i, item in enumerate(tracks['items']):
@@ -282,8 +286,6 @@ async def queue(ctx):
     channels = ctx.guild.channels
     if checks_in_bot_channel(channels, current_channel) == True:
         total_duration = 0
-        total_duration_min = 0
-        total_duration_sec = 0
         ydl_opts = {
             'format': 'bestvideo[width<=1080]+bestaudio/best',
             'quiet': True,
@@ -300,7 +302,7 @@ async def queue(ctx):
         video = url_queue[0]
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             temps_chanson = ydl.extract_info(video, download=False)["duration"]
-            total_duration = temps_chanson
+            total_duration += temps_chanson
             minutes = str((temps_chanson // 60))
             secondes = temps_chanson - (temps_chanson // 60)*60
             if secondes < 10:
@@ -318,33 +320,43 @@ async def queue(ctx):
                     minutes = "0" + str(minutes)
                 temps_chanson = str(minutes) + ":" + str(secondes)
             liste = [f"1 :  %s" %(ydl.extract_info(video, download=False)["title"]) + " " + "(" + temps_chanson + ")"]
-
-        total_duration_min += int(minutes)
-        total_duration_sec += int(secondes)
-
         number_of_times = len(url_queue)//25 + 1
 
         for i in range(1, len(url_queue)):
             video = url_queue[i]
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                 temps_chanson = ydl.extract_info(video, download=False)["duration"]
+                total_duration += temps_chanson
                 minutes = str((temps_chanson // 60))
                 secondes = temps_chanson - (temps_chanson // 60)*60
                 if secondes < 10:
                     secondes = "0" + str(secondes)
                 temps_chanson = minutes + ":" + str(secondes)
                 meta = liste.append(f'{i+1} : %s' %(ydl.extract_info(video, download=False)["title"]) + " " + "(" + temps_chanson + ")")
-            total_duration_min += int(minutes)
-            if total_duration_min >= 60:
-                for i in range(total_duration_min//60):
-                    total_duration_min -= 60
-                    total_duration_hours += 1
-            total_duration_sec += str(secondes)
-            if total_duration_hours > 0:
-                total_duration = str(total_duration_hours) + ":" + str(minutes) + ":" + str(secondes)
-            else:
-                total_duration = str(minutes) + ":" + str(secondes)
-        #print(liste, len(url_queue), number_of_times)
+
+        hours_2 = int(total_duration)//3600
+        minutes_2 = int(total_duration)//60
+        secondes_2 = int((total_duration / 60 - minutes_2) * 60)
+
+
+        if secondes_2 > 60:
+            while secondes_2 > 60:
+                secondes_2 -= 60
+                minutes_2 += 1
+        if minutes_2 > 60:
+            while minutes_2 > 60:
+                minutes_2 -= 60
+                hours_2 += 1
+
+        if secondes_2 < 10:
+            secondes_2= "0" + str(secondes_2)
+        if minutes_2 < 10:
+            minutes_2 = "0" + str(minutes_2)
+        if hours_2 < 10:
+            hours_2 = "0" + str(hours_2)
+
+        total_duration = str(hours_2) + " : " + str(minutes_2) + " : " + str(secondes_2)
+
         for r in range(number_of_times):
             if not len(liste)-25 < 0:
                 emb = discord.Embed(title= f"File d'attente ({total_duration})", description = None, color=0x3498db)
@@ -383,26 +395,26 @@ async def our_diary(ctx):
     chrome_options.add_argument("--window-size=%s" % WINDOW_SIZE)
     chrome_options.binary_location = CHROME_PATH
 
-    driver = webdriver.Chrome(executable_path = "Desktop/chromedriver.exe")
+    driver = webdriver.Chrome(executable_path = "Desktop/chromedriver.exe", chrome_options=chrome_options)
     driver.get(f"https://zeus.3ie.fr/home")
 
     boutton = driver.find_element_by_tag_name("button")
     boutton.click()
 
-    sleep(0.5)
+    sleep(1)
 
     email_bar = driver.find_element_by_name("loginfmt")
-    email_bar.send_keys("clovis.lefebvre@epita.fr")
+    with open('email.txt', 'r') as email:
+        email_bar.send_keys(email)
 
     search_btn = driver.find_element_by_id("idSIButton9")
     search_btn.click()
 
-    sleep(3)
+    sleep(10)
 
     pass_bar = driver.find_element_by_name('Password')
-
-    sleep(5)
-    pass_bar.send_keys("u^zaEt6k")
+    with open('mdp_epi.txt', 'r') as mdp_epi:
+        pass_bar.send_keys("mdp_epi")
 
     search_btn = driver.find_element_by_id("submitButton")
     search_btn.click()
@@ -420,21 +432,25 @@ async def our_diary(ctx):
     all_btn = driver.find_element_by_tag_name("button")
     all_btn.click()
 
+    sleep(0.5)
+
     all_btn = driver.find_element_by_tag_name("mat-expansion-panel-header")
     all_btn.click()
 
-    sleep(1)
+    sleep(0.5)
 
     class_button = driver.find_element_by_id("filterGroup")
     class_button.send_keys("A2")
 
-    sleep(1)
+    sleep(0.5)
 
     yes_btn = driver.find_elements_by_tag_name("button")
     yes_btn[3].click()
 
+    sleep(0.5)
+
     check_box_class = driver.find_elements_by_class_name("tree-node-checkbox")
-    check_box_class[14].click()
+    check_box_class[11].click()
 
     week_days = driver.find_element_by_class_name("cal-day-headers")
     print(week_days.text.split("\n"))
@@ -499,8 +515,8 @@ async def our_diary(ctx):
         sous_texte = matiere + texte.text
         events.append(sous_texte.split(" "))
         liste.append(sous_texte.split(";"))
-        bouton = driver.find_element_by_class_name("close")
-        bouton.click()
+        bouton_close = driver.find_element_by_class_name("btn-close")
+        bouton_close.click()
         sleep(1)
 
     print("liste : ", liste)
@@ -548,123 +564,6 @@ async def our_diary(ctx):
                     del liste_[0]
                 await ctx.send(list_commands)
 
-@bot.command(pass_context=True)
-async def play_music_from_top_world(ctx, rang):
-    global url_queue, ydl_opts, current_music
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        real_liste_tracks = []
-        real_liste_artists = []
-        liste_tracks = []
-        liste_artists = []
-        client = ctx.guild.voice_client
-        channel = ctx.author.voice
-
-        if channel is None:
-            return await ctx.send("Not connected to voice channel")
-
-
-        client_credentials_manager = SpotifyClientCredentials(client_id="358a882e0433437896ed0c77a429023b",client_secret="5f2f3c1967104ccfbc450a7ea10e4115")
-        sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-
-        playlist_id = 'spotify:user:spotifycharts:playlist:37i9dQZEVXbMDoHDwVN2tF?si=e74c595b4492499b'
-        results = sp.playlist(playlist_id)
-        tracks = results['tracks']
-        for i, item in enumerate(tracks['items']):
-            track = item['track']
-            real_liste_tracks.append(track['name'])
-            real_liste_artists.append(track['artists'][0]['name'])
-
-        for i in range(25):
-            liste_tracks.append(real_liste_tracks[i])
-            liste_artists.append(real_liste_artists[i])
-
-        if rang != "all":
-            music_playing = liste_tracks[int(rang) - 1] + " " + liste_artists[int(rang) - 1]
-        else:
-            shuffle(liste_tracks)
-            music_playing = liste_tracks[0] + " " + liste_artists[0]
-
-        query_string = urllib.parse.urlencode({
-            'search_query': music_playing
-        })
-        htm_content = urllib.request.urlopen(
-            'https://www.youtube.com/results?' + query_string
-        )
-        search_results = re.findall(r"watch\?v=(\S{11})", htm_content.read().decode())
-
-        video = 'http://www.youtube.com/watch?v=' + search_results[0]
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            temps_chanson = ydl.extract_info(video, download=False)["duration"]
-            temps_chanson = str((temps_chanson // 60)) + ":" + str(temps_chanson - (temps_chanson // 60)*60)
-            liste = [f"1 :  %s" %(ydl.extract_info(video, download=False)["title"]) + " " + "(" + temps_chanson + ")"]
-
-        url = 'http://www.youtube.com/watch?v=' + search_results[0]
-        print("play")
-        client = ctx.guild.voice_client
-
-        if rang == "all":
-            for i in range(1, 25):
-                music_playing = liste_tracks[i] + " " + liste_artists[i]
-                query_string = urllib.parse.urlencode({
-                    'search_query': music_playing
-                })
-                htm_content = urllib.request.urlopen(
-                    'https://www.youtube.com/results?' + query_string
-                )
-                search_results = re.findall(r"watch\?v=(\S{11})", htm_content.read().decode())
-
-                video = 'http://www.youtube.com/watch?v=' + search_results[0]
-                url_queue.append(video)
-
-        title = f"%s" %(ydl.extract_info(url, download=False)['title'])
-
-        if client and client.channel:
-            video = Video(url)
-            url_queue.append(url)
-            musics[ctx.guild].append(video)
-            print("dans la file d'attente")
-            await ctx.send(f"**{title}** {video.url} a été ajouté à la file d'attente")
-        else:
-            channel = ctx.author.voice.channel
-            video = Video(url)
-            musics[ctx.guild] = []
-            client = await channel.connect()
-            current_music = title
-            msg = await ctx.send(f"Je lance **{title}** : {video.url}")
-            play_song(ctx, client, musics[ctx.guild], video)
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
-@bot.command()
-async def top_world(ctx):
-    """shows actual best songs in the world on Spotify"""
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        liste_tracks = []
-        liste_artists = []
-        liste_images = []
-        client_credentials_manager = SpotifyClientCredentials(client_id="358a882e0433437896ed0c77a429023b",client_secret="5f2f3c1967104ccfbc450a7ea10e4115")
-        sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-
-        playlist_id = 'spotify:user:spotifycharts:playlist:37i9dQZEVXbMDoHDwVN2tF?si=510c4902c6ba4d80'
-        results = sp.playlist(playlist_id)
-        tracks = results['tracks']
-        for i, item in enumerate(tracks['items']):
-            track = item['track']
-            liste_tracks.append(track['name'])
-            liste_images.append(track['album']['images'][2]['url'])
-            liste_artists.append(track['artists'][0]['name'])
-        emb = discord.Embed(title=None, description = "Top 25 - World on Spotify", color=0x3498db)
-        for i in range(len(liste_tracks)-1):
-            field = emb.add_field(name = str(i+1), value = liste_artists[i] + " - " + liste_tracks[i])
-            field.set_thumbnail(url = liste_images[0])
-        msg = await ctx.send(embed = emb)
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
 @bot.command()
 async def joke(ctx):
     current_channel = ctx.message.channel.id
@@ -679,7 +578,8 @@ async def blague(ctx):
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
     if checks_in_bot_channel(channels, current_channel) == True:
-        joke = BlagueApi.Joke("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiODQ0NTk1OTMzODk0NjcyNDM0IiwibGltaXQiOjEwMCwia2V5IjoicFgzQ1NsVHhtNnhaSEk1eEhXcTB0aEp5ZTVjVXhWZ2dmaDFoanVlaXV6SzQ2QjRKZ1MiLCJjcmVhdGVkX2F0IjoiMjAyMS0wNi0wM1QxMzowMjozMSswMDowMCIsImlhdCI6MTYyMjcyNTM1MX0.0WM3X_WjxfugpJRVz5_o0-_A_VL2fwl8KjXSLygjsWA")
+        with open('token_blague.txt', 'r') as token_blague:
+            joke = BlagueApi.Joke("token_blague")
         rep = joke.get_joke_type()
         await ctx.send(rep["joke"])
         await ctx.send(rep["answer"])
@@ -724,14 +624,14 @@ async def current_time(ctx, contitry):
         secondes = int(secondes)
 
         tts = gTTS(f"Il est actuellement {hours} heures, {minutes} minutes et {secondes} secondes à {contitry}", lang="fr")
-        tts.save('Downloads/heure/heure.mp3')
+        tts.save('Desktop/bot_discord/heure/heure.mp3')
         user = ctx.message.author
         if user.voice is not None:
             channel = ctx.author.voice.channel
             client = await channel.connect()
-            client.play(discord.FFmpegPCMAudio('Downloads/heure/heure.mp3'))
+            client.play(discord.FFmpegPCMAudio('Desktop/bot_discord/heure/heure.mp3'))
             ctx.voice_client.source.volume = 1000 / 100
-            length = mutagen_length("C:/Users/gamin/Downloads/heure/heure.mp3")
+            length = mutagen_length("C:/Users/gamin/Desktop/bot_discord/heure/heure.mp3")
             print("duration sec: " + str(length))
             print("duration min: " + str(int(length/60)) + ':' + str(int(length%60)))
             sleep(length)
@@ -743,35 +643,43 @@ async def current_time(ctx, contitry):
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
 @bot.command()
-async def top_fr(ctx):
-    """shows actual best fr songs on Spotify"""
+async def top(ctx, code_pays):
+    global pays
+    """shows actual best songs in a country on Spotify"""
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
     if checks_in_bot_channel(channels, current_channel) == True:
-        liste_tracks = []
-        liste_artists = []
-        liste_images = []
-        images = ""
-        client_credentials_manager = SpotifyClientCredentials(client_id="358a882e0433437896ed0c77a429023b",client_secret="5f2f3c1967104ccfbc450a7ea10e4115")
-        sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+        if code_pays not in pays:
+            await ctx.send("Dsl, mais je ne connais pas le code de ce pays. utilise la commande '$aide' pour voir tout les codes des pays disponibles et leur orthographe exacte.")
+        else:
+            link_pays = "spotify:user:spotifycharts:playlist:" + pays[code_pays]
+            print(link_pays)
+            liste_tracks = []
+            liste_artists = []
+            liste_images = []
+            images = ""
+            with open('token_spo.txt', 'r') as token_spo:
+                client_credentials_manager = SpotifyClientCredentials(client_id="358a882e0433437896ed0c77a429023b",client_secret=token_spo)
+            sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-        playlist_id = 'spotify:user:spotifycharts:playlist:37i9dQZEVXbIPWwFssbupI?si=1e836528e2384a70'
-        results = sp.playlist(playlist_id)
-        tracks = results['tracks']
-        for i, item in enumerate(tracks['items']):
-            track = item['track']
-            liste_tracks.append(track['name'])
-            liste_images.append(track['album']['images'][2]['url'])
-            liste_artists.append(track['artists'][0]['name'])
-        emb = discord.Embed(title=None, description = "Top 25 - France on Spotify", color=0x3498db)
-        print(images)
-        for i in range(25):
-            field = emb.add_field(name = str(i+1), value = liste_artists[i] + " - " + liste_tracks[i])
-            field.set_thumbnail(url = liste_images[0])
-        print(liste_tracks)
-        msg = await ctx.send(embed = emb)
+            playlist_id = link_pays
+            results = sp.playlist(playlist_id)
+            tracks = results['tracks']
+            for i, item in enumerate(tracks['items']):
+                track = item['track']
+                liste_tracks.append(track['name'])
+                liste_images.append(track['album']['images'][2]['url'])
+                liste_artists.append(track['artists'][0]['name'])
+            emb = discord.Embed(title=None, description = "Top 25 - " + code_pays + " on Spotify", color=0x3498db)
+            print(images)
+            for i in range(25):
+                field = emb.add_field(name = str(i+1), value = liste_artists[i] + " - " + liste_tracks[i])
+                field.set_thumbnail(url = liste_images[0])
+            print(liste_tracks)
+            msg = await ctx.send(embed = emb)
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
+
 
 @bot.command()
 async def connect(ctx):
@@ -862,6 +770,7 @@ async def play(ctx, *, search):
                     if int(minutes) < 10:
                         minutes = "0" + str(minutes)
                     temps_chanson = minutes + ":" + str(secondes)
+            with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                 meta = liste.append(f'{x+2} : %s' %(ydl.extract_info(video, download=False)["title"]) + " " + "(" + temps_chanson + ")")
             i += 1
 
@@ -910,7 +819,8 @@ async def play(ctx, *, search):
                         print("play")
                         client = ctx.guild.voice_client
                         video = Video(url)
-                        title = f"%s" %(ydl.extract_info(url, download=False)['title'])
+                        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                            title = f"%s" %(ydl.extract_info(url, download=False)['title'])
 
                         if client and client.channel and len(url_queue) >= 0:
                             url_queue.append(url)
@@ -1194,6 +1104,7 @@ async def slap(ctx, member):
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
 @bot.command()
+@commands.has_permissions(manage_messages=True)
 async def nombre_serveurs(ctx):
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
@@ -1308,16 +1219,16 @@ async def accent(ctx, langue, *, message):
             tts = gTTS(message, lang="fr", tld="ca")
         else:
             tts = gTTS(message, lang=langue)
-        tts.save('Downloads/traduction/traduction.mp3')
+        tts.save('Desktop/bot_discord/traduction.mp3')
         user = ctx.message.author
         if user.voice is None:
             return await ctx.send("Not connected to voice channel")
 
         channel = ctx.author.voice.channel
         client = await channel.connect()
-        client.play(discord.FFmpegPCMAudio('Downloads/traduction/traduction.mp3'))
+        client.play(discord.FFmpegPCMAudio('Desktop/bot_discord/traduction.mp3'))
         ctx.voice_client.source.volume = 1000 / 100
-        length = mutagen_length("C:/Users/gamin/Downloads/traduction/traduction.mp3")
+        length = mutagen_length("C:/Users/gamin/Desktop/bot_discord/traduction.mp3")
         print("duration sec: " + str(length))
         print("duration min: " + str(int(length/60)) + ':' + str(int(length%60)))
         sleep(length)
@@ -1352,6 +1263,7 @@ async def ping(ctx):
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
+'''
 @bot.command()
 async def screenshot(ctx, *name):
     current_channel = ctx.message.channel.id
@@ -1362,8 +1274,9 @@ async def screenshot(ctx, *name):
         s.save(f"Desktop\\{name}.png")
         await ctx.send(f"Ta photo a bien été prise et a été envoyé sur ton bureau sous le nom de **{name}**.png")
     else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
+        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")'''
 
+'''
 @bot.command()
 async def bonjour(ctx):
     current_channel = ctx.message.channel.id
@@ -1374,13 +1287,7 @@ async def bonjour(ctx):
         for r in server.roles:
             role = f"{r}"
             print(role)
-            await ctx.send(role)
-
-        serverName = server.name
-        message = f"Bonjour jeune padawan ! Savais-tu que tu te trouves dans le serveur *{serverName}*, c'est d'ailleurs un super serveur puisque **JE** suis dedans"
-        await ctx.send(message)
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
+            await ctx.send(role)'''
 
 @bot.command()
 async def say(ctx, chiffre, *texte):
@@ -1426,7 +1333,7 @@ async def aide(ctx):
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
     if checks_in_bot_channel(channels, current_channel) == True:
-        commands = "```fix\n$serverInfo```permet de connaître quelques informations sur le serveur \n\n```fix\n$bonjour```me dis bonjour et je vous réponds \n\n```fix\n$say + nombre de fois + message à dire```permet de faire dire quelque chose au bot fois un nombre (par exemple, input : $say 4 coucou, output : coucou coucou coucou coucou) \n\n```fix\n$getInfo + input```permet d'avoir des infos sur l'input que vous donnez (input possible : memberCount, numberOfChannel, name) \n\n```fix\n$clear + nombre de messages précédents```efface le nombre de message précedent (exemple input : $clear 5 output : effacement des 5 précédents messages) \n\n```fix\n$screenshot + nom_screenshot```prend une photo de votre écran et l'ajoute à votre bureau. (exemple: $screenshot maths output : capture d'écran de la conversation où vous avez écrit cette commande et enregistrement sur le bureau sous le nom maths.png \n\n```fix\n$ping```fait une partie de tennis de table avec moi. \n\n```fix\n$kiss + ping d'un membre du serveur```fait un bisou à la personne que tu mentionnes (l'input doit être sous la forme '$kiss @destinataire') \n\n```fix\n$slap + mention d'un membre du serveur```donne une claque au destinataire, s'écrit sous la même forme que la fonction $kiss \n\n```fix\n$coucou + mention d'un membre du serveur```permet de faire coucou au destinataire, s'écrit sous la même forme que la fonction $kiss \n\n```fix\n$punch + mention d'un membre du serveur```donne un coup de poing au destinataire, s'écrit sous la même forme que la fonction $kiss \n\n```fix\n$play + nom de la musique à jouer```joue une musique choisi par l'utilisateur dans le salon vocal où est l'utilisateur (exemple d'input : $play despacito) \n\n```fix\n$morpion + ping des deux joueurs qui veulent jouer```démarre une partie de morpion (ou tic tac toe en anglais). Pour y jouer il faut mettre en input 2 mentions de 'vraies' personnes et non des bots. De plus, pour pouvoir placer un pion sur le plateau, il faut utiliser la commande $place puis écrire en input le rang où le joueur veut poser son pion. Pour vous aider, voici le plateau avec à la place des cases leur rang pour vous aider à poser vos pions \n    1   2   3   \n   4   5   6   \n   7   8   9   \n\n```fix\n$top_fr```donne le top 25 actuel des meilleurs chansons en France sur Spotify \n\n```fix\n$top_world```donne le top 25 actuel des meilleurs chansons dans le monde entier sur Spotify \n\n```fix\n$play music_from_top_world + rang de la musique voulu```permet de jouer rapidement une musique en mettant son rang que vous pouvez retrouver grâce à la commande $top_world. Petite nouveauté sur cette commande : il est possible de jouer toutes les musiques dans un ordre aléatoire du $top_world en écrivant $play_music_from_top_world all \n\n```fix\n$play music_from_top_fr + rang de la musique voulu```permet de jouer rapidement une musique en mettant son rang en input que vous pouvez retrouver grâce à la commande $top_france. Petite nouveauté sur cette commande : il est possible de jouer toutes les musiques dans un ordre aléatoire du $top_fr en écrivant $play_music_from_top_fr all \n\n```fix\n$blague```lorsque vous activer cette commande je vous raconte n'importe quelle blague que je connais en français\n\n```fix\n$joke```lorsque vous écrivez cette commande je vous raconte n'importe quelle blague que je connais en anglais \n\n```fix\n$start_hangman```démarre une partie du jeu du pendu mais svp n'essayez pas cette commande car elle est en développement. Elle risque de faire crache le bot et le server. \n\n```fix\n$nombre_serveurs```donne le nombre de serveur dans lequel je suis et je donne leur nom.```fix\n$accent + code langue + message à dire``` je lis votre message avec l'accent dans la langue de votre choix. les langues disponibles sont : 'af': 'Afrikaans', 'ar': 'Arabic', 'bg': 'Bulgarian', 'bn': 'Bengali', 'bs': 'Bosnian', 'ca': 'Catalan', 'cs': 'Czech', 'cy': 'Welsh', 'da': 'Danish', 'de': 'German', 'el': 'Greek', 'en': 'English', 'eo': 'Esperanto', 'es': 'Spanish', 'et': 'Estonian', 'fi': 'Finnish', 'fr': 'French', 'gu': 'Gujarati', 'hi': 'Hindi', 'hr': 'Croatian', 'hu': 'Hungarian', 'hy': 'Armenian', 'id': 'Indonesian', 'is':'Icelandic', 'it': 'Italian', 'ja': 'Japanese', 'jw': 'Javanese', 'km': 'Khmer', 'kn': 'Kannada', 'ko': 'Korean', 'la': 'Latin', 'lv': 'Latvian', 'mk': 'Macedonian', 'ml': 'Malayalam', 'mr': 'Marathi', 'my': 'Myanmar (Burmese)', 'ne': 'Nepali', 'nl': 'Dutch', 'no': 'Norwegian', 'pl': 'Polish', 'pt': 'Portuguese', 'qu': 'Québécois', 'ro': 'Romanian', 'ru': 'Russian', 'si': 'Sinhala', 'sk': 'Slovak', 'sq': 'Albanian', 'sr': 'Serbian', 'su': 'Sundanese', 'sv': 'Swedish', 'sw': 'Swahili', 'ta': 'Tamil', 'te': 'Telugu', 'th': 'Thai', 'tl': 'Filipino', 'tr': 'Turkish', 'uk': 'Ukrainian', 'ur': 'Urdu', 'vi': 'Vietnamese', 'zh-CN': 'Chinese', 'zh-TW': 'Chinese (Mandarin/Taiwan)', 'zh': 'Chinese (Mandarin)' \n\n```fix\n$current_time + nom du continent en anglais/nom de la capitale en anglais``` donne l'heure actuelle dans la ville écrite en Input."
+        commands = "```fix\n$serverInfo```permet de connaître quelques informations sur le serveur \n\n```fix\n$say + nombre de fois + message à dire```permet de faire dire quelque chose au bot fois un nombre (par exemple, input : $say 4 coucou, output : coucou coucou coucou coucou) \n\n```fix\n$getInfo + input```permet d'avoir des infos sur l'input que vous donnez (input possible : memberCount, numberOfChannel, name) \n\n```fix\n$clear + nombre de messages précédents```efface le nombre de message précedent (exemple input : $clear 5 output : effacement des 5 précédents messages)\n\n```fix\n$ping```fait une partie de tennis de table avec moi. \n\n```fix\n$kiss + ping d'un membre du serveur```fait un bisou à la personne que tu mentionnes (l'input doit être sous la forme '$kiss @destinataire') \n\n```fix\n$slap + mention d'un membre du serveur```donne une claque au destinataire, s'écrit sous la même forme que la fonction $kiss \n\n```fix\n$coucou + mention d'un membre du serveur```permet de faire coucou au destinataire, s'écrit sous la même forme que la fonction $kiss \n\n```fix\n$punch + mention d'un membre du serveur```donne un coup de poing au destinataire, s'écrit sous la même forme que la fonction $kiss \n\n```fix\n$play + nom de la musique à jouer```joue une musique choisi par l'utilisateur dans le salon vocal où est l'utilisateur (exemple d'input : $play despacito) \n\n```fix\n$morpion + ping des deux joueurs qui veulent jouer```démarre une partie de morpion (ou tic tac toe en anglais). Pour y jouer il faut mettre en input 2 mentions de 'vraies' personnes et non des bots. De plus, pour pouvoir placer un pion sur le plateau, il faut utiliser la commande $place puis écrire en input le rang où le joueur veut poser son pion. Pour vous aider, voici le plateau avec à la place des cases leur rang pour vous aider à poser vos pions \n    1   2   3   \n   4   5   6   \n   7   8   9   \n\n```fix\n$top + code du pays```donne le top 25 actuel des meilleurs chansons du pays que vous avez indiqué sur Spotify. Voici les pays disponibles et leur code correspondant : (France : FR, Royaume-Uni : UK, Etats-Unis : USA, Monde : WORLD, Espagne : ES, Inde : IN, Philippines : PH , Turquie : TU, Japon : JA, Pays-Bas : PB, Italie : IT, Russie : RU). Je tiens à préciser que d'autres pays vont être ajouter à cette commande dans le futur. \n\n```fix\n$play_music + code classement pays dans $top + rang de la musique voulu```permet de jouer rapidement une musique du classement du pays de votre choix (vous pouvez trouvez les codes des pays disponibles dans l'aide pour la commande $top) en mettant son rang que vous pouvez retrouver grâce à la commande $top. Petite nouveauté sur cette commande : il est possible de jouer toutes les musiques dans un ordre aléatoire du $top du pays de votre choix en écrivant par exemple : $play_music FR all \n\n```fix\n$blague```lorsque vous activer cette commande je vous raconte n'importe quelle blague que je connais en français\n\n```fix\n$joke```lorsque vous écrivez cette commande je vous raconte n'importe quelle blague que je connais en anglais \n\n```fix\n$start_hangman```démarre une partie du jeu du pendu mais svp n'essayez pas cette commande car elle est en développement. Elle risque de faire crache le bot et le server. \n\n```fix\n$nombre_serveurs```donne le nombre de serveur dans lequel je suis et je donne leur nom.```fix\n$accent + code langue + message à dire``` je lis votre message avec l'accent dans la langue de votre choix. les langues disponibles sont : 'af': 'Afrikaans', 'ar': 'Arabic', 'bg': 'Bulgarian', 'bn': 'Bengali', 'bs': 'Bosnian', 'ca': 'Catalan', 'cs': 'Czech', 'cy': 'Welsh', 'da': 'Danish', 'de': 'German', 'el': 'Greek', 'en': 'English', 'eo': 'Esperanto', 'es': 'Spanish', 'et': 'Estonian', 'fi': 'Finnish', 'fr': 'French', 'gu': 'Gujarati', 'hi': 'Hindi', 'hr': 'Croatian', 'hu': 'Hungarian', 'hy': 'Armenian', 'id': 'Indonesian', 'is':'Icelandic', 'it': 'Italian', 'ja': 'Japanese', 'jw': 'Javanese', 'km': 'Khmer', 'kn': 'Kannada', 'ko': 'Korean', 'la': 'Latin', 'lv': 'Latvian', 'mk': 'Macedonian', 'ml': 'Malayalam', 'mr': 'Marathi', 'my': 'Myanmar (Burmese)', 'ne': 'Nepali', 'nl': 'Dutch', 'no': 'Norwegian', 'pl': 'Polish', 'pt': 'Portuguese', 'qu': 'Québécois', 'ro': 'Romanian', 'ru': 'Russian', 'si': 'Sinhala', 'sk': 'Slovak', 'sq': 'Albanian', 'sr': 'Serbian', 'su': 'Sundanese', 'sv': 'Swedish', 'sw': 'Swahili', 'ta': 'Tamil', 'te': 'Telugu', 'th': 'Thai', 'tl': 'Filipino', 'tr': 'Turkish', 'uk': 'Ukrainian', 'ur': 'Urdu', 'vi': 'Vietnamese', 'zh-CN': 'Chinese', 'zh-TW': 'Chinese (Mandarin/Taiwan)', 'zh': 'Chinese (Mandarin)' \n\n```fix\n$current_time + nom du continent en anglais/nom de la capitale en anglais``` donne l'heure actuelle dans la ville écrite en Input."
         liste = list(commands)
         number_of_times = len(liste) // 2000 + 1
         print(number_of_times, len(liste))
@@ -1682,4 +1589,5 @@ async def stop(ctx):
     await ctx.send("Merci de m'avoir utiliser. J'espère vous revoir bientôt")
     raise SystemExit
 
-bot.run("the token of your bot")
+with open('token_bot.txt', 'r') as token:
+    bot.run(token.read())
