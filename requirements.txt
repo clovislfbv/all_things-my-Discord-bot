@@ -1,0 +1,13 @@
+aiohttp
+pydantic
+typing
+discord
+youtube_dl
+spotipy
+requests
+pyjokes
+gtts
+pytz
+selenium
+mutagen
+pafy

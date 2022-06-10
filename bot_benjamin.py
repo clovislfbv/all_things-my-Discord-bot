@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands, tasks
 from youtube_dl import *
 import asyncio
-from random import randint, choice
+from random import randint, choice, shuffle
 import pyautogui as o
 import urllib.parse, urllib.request, re
 from time import sleep
@@ -117,7 +117,7 @@ def play_song(ctx, client, queu, song):
             del queu[0]
             del url_queue[0]
             print(current_music)
-            with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            with YoutubeDL(ydl_opts) as ydl:
                 title = f"%s" %(ydl.extract_info(current_music, download=False)['title'])
             asyncio.run_coroutine_threadsafe(ctx.send(f"Je lance **{title}** : {current_music}"), bot.loop)
             play_song(ctx, client, queu, new_song)
@@ -196,7 +196,7 @@ async def play_music(ctx, code_pays, rang):
             return await ctx.send("Not connected to voice channel")
 
         with open('token_spo.txt', 'r') as token_spo:
-            client_credentials_manager = SpotifyClientCredentials(client_id="358a882e0433437896ed0c77a429023b",client_secret=token_spo)
+            client_credentials_manager = SpotifyClientCredentials(client_id="358a882e0433437896ed0c77a429023b",client_secret=token_spo.read())
         sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
         playlist_id = link_pays
@@ -230,7 +230,7 @@ async def play_music(ctx, code_pays, rang):
         search_results = re.findall(r"watch\?v=(\S{11})", htm_content.read().decode())
 
         video = 'http://www.youtube.com/watch?v=' + search_results[0]
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        with YoutubeDL(ydl_opts) as ydl:
             liste = [f"1 :  %s" %(ydl.extract_info(video, download=False)["title"])]
 
         url = 'http://www.youtube.com/watch?v=' + search_results[0]
@@ -300,7 +300,7 @@ async def queue(ctx):
             await ctx.send("Veuillez patienter le temps que je cherche tout les titres dans la file d'attente")
 
         video = url_queue[0]
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        with YoutubeDL(ydl_opts) as ydl:
             temps_chanson = ydl.extract_info(video, download=False)["duration"]
             total_duration += temps_chanson
             minutes = str((temps_chanson // 60))
@@ -324,7 +324,7 @@ async def queue(ctx):
 
         for i in range(1, len(url_queue)):
             video = url_queue[i]
-            with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            with YoutubeDL(ydl_opts) as ydl:
                 temps_chanson = ydl.extract_info(video, download=False)["duration"]
                 total_duration += temps_chanson
                 minutes = str((temps_chanson // 60))
@@ -579,7 +579,7 @@ async def blague(ctx):
     channels = ctx.guild.channels
     if checks_in_bot_channel(channels, current_channel) == True:
         with open('token_blague.txt', 'r') as token_blague:
-            joke = BlagueApi.Joke("token_blague")
+            joke = BlagueApi.Joke(token_blague.read())
         rep = joke.get_joke_type()
         await ctx.send(rep["joke"])
         await ctx.send(rep["answer"])
@@ -659,7 +659,7 @@ async def top(ctx, code_pays):
             liste_images = []
             images = ""
             with open('token_spo.txt', 'r') as token_spo:
-                client_credentials_manager = SpotifyClientCredentials(client_id="358a882e0433437896ed0c77a429023b",client_secret=token_spo)
+                client_credentials_manager = SpotifyClientCredentials(client_id="358a882e0433437896ed0c77a429023b",client_secret=token_spo.read())
             sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
             playlist_id = link_pays
@@ -721,7 +721,7 @@ async def play(ctx, *, search):
 
         await ctx.send("Veuillez patienter, je dois trouver les vidéos pour que vous puissiez choisir la musique qui vous convienne.")
         video = 'http://www.youtube.com/watch?v=' + search_results[counter]
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        with YoutubeDL(ydl_opts) as ydl:
             if ydl.extract_info(video, download=False)["is_live"] == True:
                 while ydl.extract_info(video, download=False)["is_live"] == True:
                     counter += 1
@@ -752,7 +752,7 @@ async def play(ctx, *, search):
             if ydl.extract_info(video, download=False)["is_live"] == True:
                 i += 1
             video = 'http://www.youtube.com/watch?v=' + search_results[i]
-            with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            with YoutubeDL(ydl_opts) as ydl:
                 temps_chanson = ydl.extract_info(video, download=False)["duration"]
                 minutes = str(temps_chanson // 60)
                 secondes = temps_chanson - (temps_chanson // 60)*60
@@ -770,7 +770,7 @@ async def play(ctx, *, search):
                     if int(minutes) < 10:
                         minutes = "0" + str(minutes)
                     temps_chanson = minutes + ":" + str(secondes)
-            with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            with YoutubeDL(ydl_opts) as ydl:
                 meta = liste.append(f'{x+2} : %s' %(ydl.extract_info(video, download=False)["title"]) + " " + "(" + temps_chanson + ")")
             i += 1
 
@@ -819,7 +819,7 @@ async def play(ctx, *, search):
                         print("play")
                         client = ctx.guild.voice_client
                         video = Video(url)
-                        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                        with YoutubeDL(ydl_opts) as ydl:
                             title = f"%s" %(ydl.extract_info(url, download=False)['title'])
 
                         if client and client.channel and len(url_queue) >= 0:
@@ -848,7 +848,7 @@ class Video:
             'no_warnings': True,
             'progress_hooks': [my_hook]
         }
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        with YoutubeDL(ydl_opts) as ydl:
             video = ydl.extract_info(link, download=False)
         video_format = video["formats"][0]
         self.url = video["webpage_url"]
