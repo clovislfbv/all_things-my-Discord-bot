@@ -3,7 +3,6 @@ from discord.ext import commands, tasks
 from youtube_dl import *
 import asyncio
 from random import randint, choice, shuffle
-import pyautogui as o
 import urllib.parse, urllib.request, re
 from time import sleep
 import logging
@@ -12,7 +11,7 @@ import spotipy
 import json
 import requests
 import shutil
-import BlagueApi
+import blagues_api as BlagueApi
 from pyjokes import *
 from gtts import gTTS
 from time import sleep
@@ -21,6 +20,7 @@ import pytz
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from datetime import date
+import cog_2
 
 bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
 musics = {}
@@ -1583,11 +1583,7 @@ async def end_hangman(ctx):
     fin = 1
     await ctx.send("La partie de pendu a été terminé manuellement. Tu peux en redémarrer une nouvelle avec la commande $start_hangman.")
 
-@bot.command()
-@commands.has_permissions(manage_messages=True)
-async def stop(ctx):
-    await ctx.send("Merci de m'avoir utiliser. J'espère vous revoir bientôt")
-    raise SystemExit
 
+bot.add_cog(cog_2.CogOwner(bot))
 with open('token_bot.txt', 'r') as token:
     bot.run(token.read())
