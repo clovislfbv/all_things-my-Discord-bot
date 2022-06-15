@@ -11,8 +11,6 @@ import spotipy
 import json
 import requests
 import shutil
-import blagues_api as BlagueApi
-from pyjokes import *
 from gtts import gTTS
 from time import sleep
 from datetime import datetime
@@ -20,7 +18,8 @@ import pytz
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from datetime import date
-import cog_2
+import jokes
+import blague
 
 bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
 musics = {}
@@ -51,7 +50,6 @@ ydl_opts = {
     'no_warnings': True,
     'progress_hooks': [my_hook]
 }
-allowed_channels = [796137851972485151, 697492398070300763, 796731890630787126, 631935311592554636] #["🤖・cow-bip-bop-bots", "bruh-botsandmusic", "test-bot", "général de mon propre serveur"]
 
 @bot.event
 async def on_ready():
@@ -65,6 +63,8 @@ def messages(ctx, message):
     print(message)
     if message.content == "hello" or message.content == "hi" or message.content == "Hello" or message.content == "HELLO" or message.content == "HI":
         asyncio.run_coroutine_threadsafe(ctx.send("hello"), bot.loop)'''
+
+allowed_channels = [796137851972485151, 697492398070300763, 796731890630787126, 631935311592554636] #["🤖・cow-bip-bop-bots", "bruh-botsandmusic", "test-bot", "général de mon propre serveur"]
 
 def checks_in_bot_channel(channels, channel):
     global allowed_channels
@@ -563,28 +563,6 @@ async def our_diary(ctx):
                     list_commands += liste_[0]
                     del liste_[0]
                 await ctx.send(list_commands)
-
-@bot.command()
-async def joke(ctx):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        await ctx.send(get_joke(category = "all"))
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
-@bot.command()
-async def blague(ctx):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        with open('token_blague.txt', 'r') as token_blague:
-            joke = BlagueApi.Joke(token_blague.read())
-        rep = joke.get_joke_type()
-        await ctx.send(rep["joke"])
-        await ctx.send(rep["answer"])
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
 @bot.command()
 async def current_time(ctx, contitry):
@@ -1583,7 +1561,7 @@ async def end_hangman(ctx):
     fin = 1
     await ctx.send("La partie de pendu a été terminé manuellement. Tu peux en redémarrer une nouvelle avec la commande $start_hangman.")
 
-
-bot.add_cog(cog_2.CogOwner(bot))
+bot.add_cog(jokes.CogOwner(bot))
+bot.add_cog(blague.CogOwner(bot))
 with open('token_bot.txt', 'r') as token:
     bot.run(token.read())
