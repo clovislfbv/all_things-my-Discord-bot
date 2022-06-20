@@ -6,8 +6,6 @@ from random import randint, choice, shuffle
 import urllib.parse, urllib.request, re
 from time import sleep
 import logging
-from spotipy.oauth2 import SpotifyClientCredentials
-import spotipy
 import json
 import requests
 import shutil
@@ -20,6 +18,8 @@ from selenium.webdriver.chrome.options import Options
 from datetime import date
 import jokes
 import blague
+import top
+import play_music
 
 bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
 musics = {}
@@ -31,11 +31,6 @@ message_channel = 0
 playing = 0
 pays = {"FR" : '37i9dQZEVXbIPWwFssbupI?si=1e836528e2384a70', "UK" : "37i9dQZEVXbLnolsZ8PSNw?si=bcc5a83311b54e67", "USA" : "37i9dQZEVXbLRQDuF5jeBp?si=0b5e105bed784940",  "WORLD" : '37i9dQZEVXbMDoHDwVN2tF?si=510c4902c6ba4d80', "ES" : "37i9dQZEVXbNFJfN1Vw8d9?si=3087bda4c2df4961", "IN" : "37i9dQZEVXbLZ52XmnySJg?si=085b180ae65b4609", "PH" : "37i9dQZEVXbNBz9cRCSFkY?si=b30c3057903f4ef5", "TU" : "37i9dQZEVXbIVYVBNw9D5K?si=3f4a25f140904d2f", "JA" : "37i9dQZEVXbKXQ4mDTEBXq?si=5971ca3ffc744d15", "PB" : "37i9dQZEVXbKCF6dqVpDkS?si=0b8e08dc941e4b47", "IT" : "37i9dQZEVXbIQnj7RRhdSX?si=3d1f7cb768e14959", "RU" : "37i9dQZEVXbL8l7ra5vVdB?si=28dc400fabb8424b"}
 current_music = ""
-dict_words = {"Das Gen(-e)" : "le gène", "Gentechnisch" : "génétique", "Gentechnikfrei, ohne gentechnik" : "sans OGM", "Das Nachrungsmittel(-), das lebensmittel(-)" : "la nourriture", "Das Genfood" : "les aliments génétiquement modifiés", "Das Produkt(-e)" : "le produit", "Die Kennzeichnung" : "l’étiquetage", "Etwas kategorisch/vehement ablehnen" : "refuser quelque chose de catégorique", "Die Ablehnung" : "le refus", "Der/die Verbraucher/in" : "le consommateur", "Vor etwas Angst haben" : "avoir peur pour quelque chose", "Falsche ausreichende informationen verbreiten" : "diffuser de fausses informations suffisantes", "Eine Gefahr für Gesundheit und Umwelt" : "Un danger pour la santé et l'environnement", "Das Risiko" : "le risque", "Etwas verteufeln" : "diaboliser quelque chose", "Panik auslösen" : "causer la panique", "Die Antibiotikaresistenz" : "résistance aux antibiotiques", "Neue Allergie auslösen" : "déclencher une nouvelle allergie", "Zum Wohl der Menscheit und Umwelt" : "pour le bien de l'humanité et de l'environnement", "Die Nature schützen" : "protéger la nature", "Die Klimawandel" : "le changement climatique", "Die Versorgung mit Narungsmitteln" : "l'approvisionnement en nourriture", "Die Skepsis" : "le sceptisme", "Offen gegenüber etwas sein" : "être ouvert à propos de quelque chose", "Über etwas diskutieren" : "discuter de quelque chose", "Der Nachweis" : "les preuves", "Wissenschaftliche Erkenntnisse" : "les résultats scientifiques", "Die Unbedenklichkeit" : "l’absence de danger", "Unbedenklich" : "inoffensif", "Kurzfristig" : "à court terme", "Vorsichtsmaßnahmen engreifen" : "prendre des précautions", "Demonstrieren" : "démontrer", "Mehr transparenz fordern" : "demander plus de transparence", "Das klonen = die künstliche Erzeugung eines Menschen" : "le clonage", "Klonen = duplizieren" : "dupliquer", "Identische Menschen herstellen" : "créer des personnes identiques", "Der Klonversuch" : "L'expérience du clonage", "Die Genforschung" : "la recherche génétique", "Die Gentechnik" : "le génie génétique", "Die Genmanipulation" : "La manipulation génétique", "die Gene untersuchen" : "Examiner les gènes", "Neue Möglichkeiten eröffnen" : "ouvrir de nouvelles perspectives", "Genetische Fehler korrigieren" : "corriger les erreurs génétiques",  "Unheilbare Krankheiten / Erbkrankheiten / Behinderungen verhindern" : "prévention des handicaps", "Gesundheitskoten einsparen" : "réduire les coûts des soins de santé", "Die Schwangerschaft(-en)" : "la grossesse", "Der Embryo" : "l'embryon", "Gesunde / perfekte Babys herstellen" : "faire des bébés en bonne santé", "Genies reproduzieren" : "reproduire des génies", "Das Leben verlängern" : "prolonger la vie", "Die Gefahr" : "le danger", "Das Risiko" : "le risque", "Embryonen herstellen" : "créer des embryons", "Embyonen zerstören" : "détruire des embryons", "Als Organlieferant dienen" : "donneur d'organes", "Die künstliche Selektion" : "la sélection artificielle", "Lebenswerte Menschen oder Eigenschaften auswählen" : "sélectionnez les personnes ou les caractéristiques pour lesquelles il vaut la peine de vivre", "Der Eingriff in die (menschliche) Nature" : "l'intervention dans la nature", "Gott spielen" : "jouer Dieu", "Skrupellos sein" : "être sans scrupules", "Skrupel haben" : "avoir des scrupules", "Durch ein Gesetz kontrollieren" : "contrôler par la loi", "regulieren" : "réglementer", "Erlauben" : "Autoriser", "verbieten" : "interdire", "Ein ethisches Problem darstellen" : "Présenter un problème éthique"}
-liste_words = []
-
-for cle in dict_words.keys():
-    liste_words.append(cle)
 
 def my_hook(d):
     if d['status'] == 'downloading':
@@ -58,12 +53,6 @@ async def on_ready():
 
 status = ["$help", "surpasser Bomboclaat Bot", "$aide"]
 
-'''
-def messages(ctx, message):
-    print(message)
-    if message.content == "hello" or message.content == "hi" or message.content == "Hello" or message.content == "HELLO" or message.content == "HI":
-        asyncio.run_coroutine_threadsafe(ctx.send("hello"), bot.loop)'''
-
 allowed_channels = [796137851972485151, 697492398070300763, 796731890630787126, 631935311592554636] #["🤖・cow-bip-bop-bots", "bruh-botsandmusic", "test-bot", "général de mon propre serveur"]
 
 def checks_in_bot_channel(channels, channel):
@@ -74,17 +63,6 @@ def checks_in_bot_channel(channels, channel):
         if channel_id == channel:
             return True
     return False
-
-@bot.command()
-async def get_id_channels(ctx):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        channel = discord.utils.get(ctx.guild.channels, name= "🤖・cow-bip-bop-bots")
-        channel_id = channel.id
-        await ctx.send(channel_id)
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
 '''
 @bot.event
@@ -128,43 +106,6 @@ def play_song(ctx, client, queu, song):
 
     client.play(source, after=next)
 
-
-@bot.command()
-async def eval_german(ctx):
-    global liste_words, dict_words
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        for i in range(len(liste_words)):
-            good_liste = []
-            bad_liste = []
-            shuffle(liste_words)
-            await ctx.send(f"Traduis en français ce mot : {liste_words[0]}\n")
-
-            def check(message):
-                return message.author == ctx.message.author and ctx.message.channel == message.channel
-
-            try :
-                mot = await bot.wait_for("message", check = check, timeout = 10)
-
-                print(mot, dict_words[liste_words[0]])
-                if mot == dict_words[liste_words[0]]:
-                    await ctx.send("Bien joué ! Tu as trouvé la bonne traduction ! :)")
-                    good_liste.append(liste_words[0])
-                elif mot != dict_words[liste_words[0]]:
-                    await ctx.send(f"Malheureusement, tu n'as pas trouvé la bonne traduction ! :(\n Essaie encore ! L'entraînement permet de ne pas refaire les mêmes erreurs à l'examen ! \n La bonne réponse était {dict_words[liste_words[0]]}")
-                    bad_liste.append(liste_words[0])
-                else:
-                    await ctx.send("...")
-                del liste_words[0]
-            except:
-                await ctx.send("Dsl ! Temps Ecoulé !")
-                break
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
-
-
 @bot.command()
 async def start(ctx, secondes = 5):
 	changeStatus.change_interval(seconds = secondes)
@@ -173,102 +114,6 @@ async def start(ctx, secondes = 5):
 async def changeStatus():
 	game = discord.Game(choice(status))
 	await bot.change_presence(activity = game)
-
-@bot.command(pass_context=True)
-async def play_music(ctx, code_pays, rang):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        global url_queue, ydl_opts, current_music, pays
-        if code_pays not in pays:
-            await ctx.send("Dsl, mais je ne connais pas le code de ce pays. utilise la commande '$aide' pour voir tout les codes des pays disponibles et leur orthographe exacte.")
-        else:
-            link_pays = "spotify:user:spotifycharts:playlist:" + pays[code_pays]
-            print(link_pays)
-        real_liste_tracks = []
-        real_liste_artists = []
-        liste_tracks = []
-        liste_artists = []
-        client = ctx.guild.voice_client
-        channel = ctx.author.voice
-
-        if channel is None:
-            return await ctx.send("Not connected to voice channel")
-
-        with open('token_spo.txt', 'r') as token_spo:
-            client_credentials_manager = SpotifyClientCredentials(client_id="358a882e0433437896ed0c77a429023b",client_secret=token_spo.read())
-        sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-
-        playlist_id = link_pays
-        results = sp.playlist(playlist_id)
-        tracks = results['tracks']
-        for i, item in enumerate(tracks['items']):
-            track = item['track']
-            real_liste_tracks.append(track['name'])
-            real_liste_artists.append(track['artists'][0]['name'])
-
-        for i in range(26):
-            liste_tracks.append(real_liste_tracks[i])
-            liste_artists.append(real_liste_artists[i])
-
-        if rang != "all":
-            if int(rang) > len(liste_tracks):
-                ctx.send("Mec t'a écris un nombre trop grand. Y a aucune musique à cette place.")
-            else:
-                music_playing = liste_tracks[int(rang) - 1] + " " + liste_artists[int(rang) - 1]
-        else:
-            await ctx.send("Veuillez patienter lors du chargement des musiques")
-            shuffle(liste_tracks)
-            music_playing = liste_tracks[0] + " " + liste_artists[0]
-
-        query_string = urllib.parse.urlencode({
-            'search_query': music_playing
-        })
-        htm_content = urllib.request.urlopen(
-            'https://www.youtube.com/results?' + query_string
-        )
-        search_results = re.findall(r"watch\?v=(\S{11})", htm_content.read().decode())
-
-        video = 'http://www.youtube.com/watch?v=' + search_results[0]
-        with YoutubeDL(ydl_opts) as ydl:
-            liste = [f"1 :  %s" %(ydl.extract_info(video, download=False)["title"])]
-
-        url = 'http://www.youtube.com/watch?v=' + search_results[0]
-        print("play")
-
-        if rang == "all":
-            for i in range(1, 26):
-                music_playing = liste_tracks[i] + " " + liste_artists[i]
-                query_string = urllib.parse.urlencode({
-                    'search_query': music_playing
-                })
-                htm_content = urllib.request.urlopen(
-                    'https://www.youtube.com/results?' + query_string
-                )
-                search_results = re.findall(r"watch\?v=(\S{11})", htm_content.read().decode())
-
-                video = 'http://www.youtube.com/watch?v=' + search_results[0]
-                url_queue.append(video)
-        title = f"%s" %(ydl.extract_info(url, download=False)['title'])
-
-        if client and client.channel:
-            video = Video(url)
-            url_queue.append(url)
-            musics[ctx.guild].append(video)
-            print("dans la file d'attente")
-            await ctx.send(f"**{title}** {video.url} a été ajouté à la file d'attente")
-        else:
-            channel = ctx.author.voice.channel
-            video = Video(url)
-            musics[ctx.guild] = []
-            client = await channel.connect()
-            current_music = title
-            msg = await ctx.send(f"Je lance **{title}** :  {video.url}")
-            play_song(ctx, client, musics[ctx.guild], video)
-            ctx.voice_client.source.volume = 50 / 100
-            print(50/100)
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
 @bot.command()
 async def music_playing(ctx):
@@ -619,45 +464,6 @@ async def current_time(ctx, contitry):
             await ctx.send("Stv y a une petite surprise lorsque tu te mets dans un chat vocal et que tu réexécutes cette commande.")
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
-@bot.command()
-async def top(ctx, code_pays):
-    global pays
-    """shows actual best songs in a country on Spotify"""
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        if code_pays not in pays:
-            await ctx.send("Dsl, mais je ne connais pas le code de ce pays. utilise la commande '$aide' pour voir tout les codes des pays disponibles et leur orthographe exacte.")
-        else:
-            link_pays = "spotify:user:spotifycharts:playlist:" + pays[code_pays]
-            print(link_pays)
-            liste_tracks = []
-            liste_artists = []
-            liste_images = []
-            images = ""
-            with open('token_spo.txt', 'r') as token_spo:
-                client_credentials_manager = SpotifyClientCredentials(client_id="358a882e0433437896ed0c77a429023b",client_secret=token_spo.read())
-            sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-
-            playlist_id = link_pays
-            results = sp.playlist(playlist_id)
-            tracks = results['tracks']
-            for i, item in enumerate(tracks['items']):
-                track = item['track']
-                liste_tracks.append(track['name'])
-                liste_images.append(track['album']['images'][2]['url'])
-                liste_artists.append(track['artists'][0]['name'])
-            emb = discord.Embed(title=None, description = "Top 25 - " + code_pays + " on Spotify", color=0x3498db)
-            print(images)
-            for i in range(25):
-                field = emb.add_field(name = str(i+1), value = liste_artists[i] + " - " + liste_tracks[i])
-                field.set_thumbnail(url = liste_images[0])
-            print(liste_tracks)
-            msg = await ctx.send(embed = emb)
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
 
 @bot.command()
 async def connect(ctx):
@@ -1561,6 +1367,8 @@ async def end_hangman(ctx):
     fin = 1
     await ctx.send("La partie de pendu a été terminé manuellement. Tu peux en redémarrer une nouvelle avec la commande $start_hangman.")
 
+bot.add_cog(top.CogOwner(bot))
+bot.add_cog(play_music.CogOwner(bot))
 bot.add_cog(jokes.CogOwner(bot))
 bot.add_cog(blague.CogOwner(bot))
 with open('token_bot.txt', 'r') as token:
