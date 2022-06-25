@@ -20,6 +20,9 @@ import jokes
 import blague
 import top
 import play_music
+import connect
+import leave
+import ban, unban
 
 bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
 musics = {}
@@ -465,16 +468,6 @@ async def current_time(ctx, contitry):
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
-@bot.command()
-async def connect(ctx):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        channel = ctx.author.voice.channel
-        client = await channel.connect()
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
 @bot.command(pass_context=True, aliases=['p'])
 async def play(ctx, *, search):
     global current_music, playing
@@ -659,19 +652,6 @@ async def est_ce_que_tu_dis_faux(ctx):
     channels = ctx.guild.channels
     if checks_in_bot_channel(channels, current_channel) == True:
         await ctx.send("Nan je ne dis jamais faux.")
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
-@bot.command()
-async def leave(ctx):
-    global url_queue
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        client = ctx.guild.voice_client
-        await client.disconnect()
-        musics[ctx.guild] = []
-        url_queue = []
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
@@ -1146,27 +1126,6 @@ async def clear(ctx, nombre : int):
         await(message.delete())
 
 @bot.command()
-async def ban(ctx, user : discord.User, *reason):
-    reason = " ".join(reason)
-    await ctx.guild.ban(user, reason = reason)
-    await ctx.send(f"{user} a été ban pour la reason suivante : {reason}.")
-    print(reason)
-
-@bot.command()
-async def unban(ctx, user, *reason):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        reason = " ".join(reason)
-        userName, userId = user.split("#")
-        bannedUsers = await ctx.guild.bans()
-        for i in bannedUsers:
-            if i.user.name == username and i.user.id == userId:
-                await ctx.guild.unban(i.user)
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
-@bot.command()
 async def kick(ctx, user : discord.User, *reason):
     reason = " ".join(reason)
     await ctx.guild.kick(user, reason = reason)
@@ -1371,5 +1330,10 @@ bot.add_cog(top.CogOwner(bot))
 bot.add_cog(play_music.CogOwner(bot))
 bot.add_cog(jokes.CogOwner(bot))
 bot.add_cog(blague.CogOwner(bot))
+bot.add_cog(connect.CogOwner(bot))
+bot.add_cog(leave.CogOwner(bot))
+bot.add_cog(ban.CogOwner(bot))
+bot.add_cog(unban.CogOwner(bot))
+
 with open('token_bot.txt', 'r') as token:
     bot.run(token.read())
