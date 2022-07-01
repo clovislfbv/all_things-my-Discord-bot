@@ -1,6 +1,8 @@
 # all_things-my-Discord-bot
 
-## Working on the game
+all_things is a discord bot coded entirely in Python
+
+## Working on the bot
 
 ### Cloning the repo
 
