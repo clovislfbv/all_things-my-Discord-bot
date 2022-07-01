@@ -22,7 +22,11 @@ import top
 import play_music
 import connect
 import leave
-import ban, unban
+import ban
+import unban
+import kick
+import volume
+import pause
 
 bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
 musics = {}
@@ -667,18 +671,6 @@ async def resume(ctx):
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
-@bot.command()
-async def pause(ctx):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        client = ctx.guild.voice_client
-        if not client.is_paused():
-            client.pause()
-            await ctx.send("La musique que vous écoutiez a bien été mis sur pause.")
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
 @bot.command(pass_context=True, aliases=['s'])
 async def skip(ctx):
     global url_queue
@@ -1125,13 +1117,6 @@ async def clear(ctx, nombre : int):
     for message in messages:
         await(message.delete())
 
-@bot.command()
-async def kick(ctx, user : discord.User, *reason):
-    reason = " ".join(reason)
-    await ctx.guild.kick(user, reason = reason)
-    await ctx.send(f"{user} a été kick pour la reason suivante : {reason}.")
-    print(reason)
-
 fin = 1
 @bot.command()
 async def start_hangman(ctx):
@@ -1334,6 +1319,9 @@ bot.add_cog(connect.CogOwner(bot))
 bot.add_cog(leave.CogOwner(bot))
 bot.add_cog(ban.CogOwner(bot))
 bot.add_cog(unban.CogOwner(bot))
+bot.add_cog(kick.CogOwner(bot))
+bot.add_cog(volume.CogOwner(bot))
+bot.add_cog(pause.CogOwner(bot))
 
 with open('token_bot.txt', 'r') as token:
     bot.run(token.read())

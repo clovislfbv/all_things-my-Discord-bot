@@ -27,5 +27,6 @@ class CogOwner(commands.Cog):
             for i in bannedUsers:
                 if i.user.name == userName and i.user.id == userId:
                     await ctx.guild.unban(i.user)
+                    print("This guy have been unbanned")
         else:
             await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
