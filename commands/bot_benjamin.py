@@ -16,17 +16,7 @@ import pytz
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from datetime import date
-import jokes
-import blague
-import top
-import play_music
-import connect
-import leave
-import ban
-import unban
-import kick
-import volume
-import pause
+import jokes, blague, top, play_music, connect, leave, ban, unban, kick, volume, pause, resume, skip, punch, say
 
 bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
 musics = {}
@@ -635,66 +625,12 @@ class Video:
         self.url = video["webpage_url"]
         self.stream_url = video_format["url"]
 
-@bot.command(pass_context=True, aliases=['v', 'vol'])
-async def volume(ctx, volume: int):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        if ctx.voice_client is None:
-            return await ctx.send("Not connected to voice channel")
-
-        print(volume/100)
-
-        ctx.voice_client.source.volume = volume / 100
-        await ctx.send(f"Changed volume to {volume}%")
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
 @bot.command()
 async def est_ce_que_tu_dis_faux(ctx):
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
     if checks_in_bot_channel(channels, current_channel) == True:
         await ctx.send("Nan je ne dis jamais faux.")
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
-@bot.command()
-async def resume(ctx):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        client = ctx.guild.voice_client
-        if client.is_paused():
-            client.resume()
-            await ctx.send(f"Je reprends la musique là où vous en étiez.")
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
-@bot.command(pass_context=True, aliases=['s'])
-async def skip(ctx):
-    global url_queue
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        client = ctx.guild.voice_client
-        client.stop()
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
-@bot.command()
-async def punch(ctx, member):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        if {ctx.author.mention} == member:
-            ctx.send("T'es teubé ou quoi ? Tu peux pas te donner des coups de poing à toi-même ?! Y a que toi pour être si teubé que ça !!")
-        else:
-            punchs = ["https://i.gifer.com/C225.gif", "https://i.gifer.com/RAKN.gif", "https://i.gifer.com/RUZS.gif", "https://i.gifer.com/HR4q.gif", "https://i.gifer.com/Tr72.gif"]
-            punchy = punchs[randint(0, len(punchs)-1)]
-            emb = discord.Embed(title=None, description = f"{ctx.author.mention} met un **ENORME !!!** coup de poing à {member}", color=0x3498db)
-            emb.set_image(url=f"{punchy}")
-            await ctx.send( embed = emb)
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
@@ -1019,46 +955,6 @@ async def ping(ctx):
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
-'''
-@bot.command()
-async def screenshot(ctx, *name):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        name = " ".join(name)
-        s = o.screenshot()
-        s.save(f"Desktop\\{name}.png")
-        await ctx.send(f"Ta photo a bien été prise et a été envoyé sur ton bureau sous le nom de **{name}**.png")
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")'''
-
-'''
-@bot.command()
-async def bonjour(ctx):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        roles = ""
-        server = ctx.guild
-        for r in server.roles:
-            role = f"{r}"
-            print(role)
-            await ctx.send(role)'''
-
-@bot.command()
-async def say(ctx, chiffre, *texte):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        if int(chiffre) > 10:
-            await ctx.send("dsl j'ai été patch je peux plus faire plus de 10 messages")
-        else:
-            for i in range(int(chiffre)):
-                await ctx.send(" ".join(texte))
-            await ctx.send("Si tu en as besoin tu peux écrire $aide pour avoir des explication sur toutes les commandes disponible avec ce bot.")
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
 @bot.command()
 async def getInfo(ctx, text):
     current_channel = ctx.message.channel.id
@@ -1322,6 +1218,10 @@ bot.add_cog(unban.CogOwner(bot))
 bot.add_cog(kick.CogOwner(bot))
 bot.add_cog(volume.CogOwner(bot))
 bot.add_cog(pause.CogOwner(bot))
+bot.add_cog(resume.CogOwner(bot))
+bot.add_cog(skip.CogOwner(bot))
+bot.add_cog(punch.CogOwner(bot))
+bot.add_cog(say.CogOwner(bot))
 
 with open('token_bot.txt', 'r') as token:
     bot.run(token.read())
