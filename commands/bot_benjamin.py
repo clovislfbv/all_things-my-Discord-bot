@@ -16,7 +16,7 @@ import pytz
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from datetime import date
-import jokes, blague, top, play_music, connect, leave, ban, unban, kick, volume, pause, resume, skip, punch, say
+import jokes, blague, top, play_music, connect, leave, ban, unban, kick, volume, pause, resume, skip, punch, say, hug, kiss, coucou
 
 bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
 musics = {}
@@ -841,59 +841,6 @@ async def togglebotchannel(ctx):
     allowed_channels.append(current_channel)
     await ctx.send("Cette channel est désormais un bot channel.")
 
-@bot.command()
-async def coucou(ctx, member):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        if {ctx.author.mention} == member:
-            ctx.send("T'es teubé ou quoi ? Tu peux pas te faire coucou à toi-même ?! Y a que toi pour être si teubé que ça !!")
-        else:
-            if member == "@everyone":
-                member = "tout le monde"
-            coucous = ["https://i.gifer.com/6ZFR.gif", "https://i.gifer.com/1UEW.gif", "https://i.gifer.com/UUP.gif", "https://i.gifer.com/Wx6B.gif", "https://i.gifer.com/WShb.gif", "https://i.gifer.com/1rO6.gif", "https://i.gifer.com/5Tz.gif", "https://i.gifer.com/CMSH.gif"]
-            coocky = coucous[randint(0,len(coucous)-1)]
-            emb = discord.Embed(title=None, description = f"{ctx.author.mention} fait un coucou à {member}", color=0x3498db)
-            emb.set_image(url=f"{coocky}")
-            await ctx.send( embed = emb)
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
-@bot.command()
-async def hug(ctx, member):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        if {ctx.author.mention} == member:
-            ctx.send("T'es teubé ou quoi ? Tu peux pas te faire des calins à toi-même ?! Y a que toi pour être si teubé que ça !!")
-        else:
-            hugs = ["https://i.gifer.com/1ak.gif", "https://i.gifer.com/2HBY.gif", "https://i.gifer.com/GAMC.gif", "https://i.gifer.com/UQOJ.gif", "https://i.gifer.com/I3M0.gif", "https://i.gifer.com/I50j.gif", "https://i.gifer.com/MMuP.gif", "https://i.gifer.com/O2pp.gif", "https://i.gifer.com/1pg.gif", "https://i.gifer.com/APS3.gif"]
-            huggy = hugs[randint(0,len(hugs)-1)]
-            emb = discord.Embed(title=None, description = f"{ctx.author.mention} fait un calin à {member}", color=0x3498db)
-            emb.set_image(url=f"{huggy}")
-            await ctx.send( embed = emb)
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
-@bot.command()
-async def kiss(ctx,*, member):
-    print(member)
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        if {ctx.author.mention} == member:
-            ctx.send("T'es teubé ou quoi ? Tu peux pas te donner de bisous à toi-même ?! Y a que toi pour être si teubé que ça !!")
-        elif member == "bot Benjamin#3840":
-            await ctx.send("Oh ! Je crois que je vais rougir.")
-        else:
-            kisses = ["https://i.gifer.com/iJb.gif", "https://i.gifer.com/V4hX.gif", "https://i.gifer.com/g33j.gif", "https://media.giphy.com/media/NKmXVFgwd8HKw/giphy.gif", "http://31.media.tumblr.com/bfbe6acecd87db57ad96c573d0e49e97/tumblr_mt2si1aAoC1sinrido1_500.gif", "https://i.gifer.com/abb.gif", "https://www.deviantart.com/inukagome134/art/Japan-Kiss-Animated-GIF-255408766"]
-            kissy = kisses[randint(0, len(kisses)-1)]
-            emb = discord.Embed(title=None, description = f"{ctx.author.mention} fait un bisou à {member}", color=0x3498db)
-            emb.set_image(url=f"{kissy}")
-            await ctx.send( embed = emb)
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
 def mutagen_length(path):
     try:
         audio = MP3(path)
@@ -1222,6 +1169,9 @@ bot.add_cog(resume.CogOwner(bot))
 bot.add_cog(skip.CogOwner(bot))
 bot.add_cog(punch.CogOwner(bot))
 bot.add_cog(say.CogOwner(bot))
+bot.add_cog(hug.CogOwner(bot))
+bot.add_cog(kiss.CogOwner(bot))
+bot.add_cog(coucou.CogOwner(bot))
 
 with open('token_bot.txt', 'r') as token:
     bot.run(token.read())
